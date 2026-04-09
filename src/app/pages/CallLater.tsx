@@ -1,249 +1,223 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { useForm, Controller } from "react-hook-form";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { HelpCircle, ChevronDown } from "lucide-react";
+interface AllSubmissionData {
+  year?: string;
+  make?: string;
+  model?: string;
+  zipCode?: string;
+  phone?: string;
+  mileage?: string;
+  doesItDrive?: string;
+  hasTitle: string;
+  address: string;
+  vehicleColor: string;
+  vin: string;
+}
 
 export default function CallLater() {
   const navigate = useNavigate();
   const location = useLocation();
-  const vehicleData = location.state;
+  const previousData = location.state || {};
 
   const [step, setStep] = useState(1);
 
-  // Step 1 - Title and Location
-  const [hasTitle, setHasTitle] = useState<boolean | null>(
-    null,
-  );
-  const [address, setAddress] = useState("");
-  const [vehicleColor, setVehicleColor] = useState("");
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    formState: { errors },
+  } = useForm<AllSubmissionData>({
+    defaultValues: {
+      ...previousData,
+      hasTitle: "",
+      address: "",
+      vehicleColor: "",
+      vin: "",
+    },
+  });
 
-  // Step 2 - VIN Information
-  const [vin, setVin] = useState("");
-
-  const handleStep1Submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (hasTitle !== null && address && vehicleColor) {
-      setStep(2);
-    }
+  const onStep1Submit = () => {
+    setStep(2);
   };
 
-  const handleStep2Submit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const completeData = {
-      ...vehicleData,
-      hasTitle,
-      address,
-      vehicleColor,
-      vin,
-    };
-
-    console.log("Complete Submission Data:", completeData);
+  const onFinalSubmit = (data: AllSubmissionData) => {
+    console.log("=== FINAL COMPLETE SUBMISSION JSON ===");
+    console.log(JSON.stringify(data, null, 2));
     navigate("/success");
   };
 
   const handleSkipVIN = () => {
-    const completeData = {
-      ...vehicleData,
-      hasTitle,
-      address,
-      vehicleColor,
-      vin: "Not provided",
-    };
-
-    console.log(
-      "Complete Submission Data (No VIN):",
-      completeData,
-    );
+    const currentData = getValues();
+    const finalData = { ...currentData, vin: "Not provided" };
+    console.log("=== SUBMISSION WITHOUT VIN ===");
+    console.log(JSON.stringify(finalData, null, 2));
     navigate("/success");
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="py-12 px-4 min-h-[80vh] flex items-center justify-center">
+      <main className="py-12 px-4 min-h-[80vh] flex items-center justify-center bg-gradient-to-b from-white to-gray-100">
         <div className="max-w-2xl mx-auto w-full">
-          {/* Card Container */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-gray-100">
-            {step === 1 && (
-              <form onSubmit={handleStep1Submit}>
-                {/* Title */}
-                <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">
-                  Title and Location
-                </h1>
-                <p className="text-gray-700 mb-8">
-                  Please enter the title and car location info
-                </p>
 
-                {/* Car Title Information */}
-                <h2 className="text-2xl font-bold text-[#1e3a8a] mb-6">
+            {step === 1 && (
+              <form onSubmit={handleSubmit(onStep1Submit)}>
+                <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">Title and Location</h1>
+                <p className="text-gray-600 mb-8">Please enter the title and car location info</p>
+
+                <h2 className="text-xl font-bold text-[#1e3a8a] mb-6 border-l-4 border-blue-600 pl-3">
                   Car Title Information
                 </h2>
 
                 <div className="mb-8">
-                  <label className="block text-gray-900 text-lg mb-4">
+                  <label className="block text-gray-900 font-semibold mb-4 text-lg">
                     Do you have the title for the car?
                   </label>
-                  <div className="flex gap-4">
-                    <button
-                      type="button"
-                      onClick={() => setHasTitle(true)}
-                      className={`flex-1 py-3 px-6 rounded-lg border-2 font-semibold transition-all ${hasTitle === true
-                        ? "bg-blue-50 border-[#4169e1] text-[#4169e1]"
-                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-                        }`}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setHasTitle(false)}
-                      className={`flex-1 py-3 px-6 rounded-lg border-2 font-semibold transition-all ${hasTitle === false
-                        ? "bg-blue-50 border-[#4169e1] text-[#4169e1]"
-                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-                        }`}
-                    >
-                      No
-                    </button>
-                  </div>
+                  <Controller
+                    name="hasTitle"
+                    control={control}
+                    rules={{ required: "Please select an option" }}
+                    render={({ field }) => (
+                      <div className="flex gap-4">
+                        <div className={`flex-1 border-2 rounded-xl transition-all ${field.value === "yes" ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white"}`}>
+                          <label className="flex items-center justify-center py-4 cursor-pointer w-full">
+                            <input
+                              type="radio"
+                              className="hidden"
+                              onChange={() => field.onChange("yes")}
+                              checked={field.value === "yes"}
+                            />
+                            <span className={`font-bold ${field.value === "yes" ? "text-blue-600" : "text-gray-500"}`}>YES</span>
+                          </label>
+                        </div>
+                        <div className={`flex-1 border-2 rounded-xl transition-all ${field.value === "no" ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white"}`}>
+                          <label className="flex items-center justify-center py-4 cursor-pointer w-full">
+                            <input
+                              type="radio"
+                              className="hidden"
+                              onChange={() => field.onChange("no")}
+                              checked={field.value === "no"}
+                            />
+                            <span className={`font-bold ${field.value === "no" ? "text-blue-600" : "text-gray-500"}`}>NO</span>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  />
+                  {errors.hasTitle && <p className="text-red-500 text-xs mt-2">{errors.hasTitle.message}</p>}
                 </div>
 
-                {/* Car Location & Color */}
-                <h2 className="text-2xl font-bold text-[#1e3a8a] mb-6">
+                <h2 className="text-xl font-bold text-[#1e3a8a] mb-6 border-l-4 border-blue-600 pl-3">
                   Car Location & Color
                 </h2>
 
                 <div className="mb-6">
-                  <label className="block text-gray-900 text-lg mb-2">
-                    Address
-                  </label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Enter pickup address"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-blue-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#4169e1] focus:ring-2 focus:ring-[#4169e1]/20"
-                    required
+                  <label className="block text-gray-700 font-semibold mb-2">Address</label>
+                  <Controller
+                    name="address"
+                    control={control}
+                    rules={{ required: "Address is required", minLength: { value: 5, message: "Too short" } }}
+                    render={({ field }) => (
+                      <input
+                        {...field}
+                        type="text"
+                        placeholder="Enter pickup address"
+                        className={`w-full px-4 py-4 rounded-xl border ${errors.address ? "border-red-500" : "border-gray-300"} bg-blue-50 focus:ring-2 focus:ring-blue-200 outline-none transition-all`}
+                      />
+                    )}
                   />
+                  {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address.message}</p>}
                 </div>
 
-                <div className="mb-8">
-                  <label className="block text-gray-900 text-lg mb-2">
-                    Vehicle color
-                  </label>
+                <div className="mb-10">
+                  <label className="block text-gray-700 font-semibold mb-2">Vehicle Color</label>
                   <div className="relative">
-                    <select
-                      value={vehicleColor}
-                      onChange={(e) =>
-                        setVehicleColor(e.target.value)
-                      }
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-blue-50 text-gray-900 appearance-none focus:outline-none focus:border-[#4169e1] focus:ring-2 focus:ring-[#4169e1]/20"
-                      required
-                    >
-                      <option value="">Color</option>
-                      <option value="Black">Black</option>
-                      <option value="White">White</option>
-                      <option value="Silver">Silver</option>
-                      <option value="Gray">Gray</option>
-                      <option value="Red">Red</option>
-                      <option value="Blue">Blue</option>
-                      <option value="Brown">Brown</option>
-                      <option value="Green">Green</option>
-                      <option value="Beige">Beige</option>
-                      <option value="Orange">Orange</option>
-                      <option value="Gold">Gold</option>
-                      <option value="Yellow">Yellow</option>
-                      <option value="Purple">Purple</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600 pointer-events-none" />
+                    <Controller
+                      name="vehicleColor"
+                      control={control}
+                      rules={{ required: "Color is required" }}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          className={`w-full px-4 py-4 rounded-xl border ${errors.vehicleColor ? "border-red-500" : "border-gray-300"} bg-blue-50 appearance-none outline-none focus:ring-2 focus:ring-blue-200`}
+                        >
+                          <option value="">Select a color</option>
+                          {["Black", "White", "Silver", "Gray", "Red", "Blue", "Brown", "Green", "Beige", "Orange", "Gold", "Yellow", "Purple", "Other"].map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                   </div>
+                  {errors.vehicleColor && <p className="text-red-500 text-xs mt-1">{errors.vehicleColor.message}</p>}
                 </div>
 
-                {/* Complete Button */}
                 <button
                   type="submit"
-                  className="w-full bg-[#4169e1] hover:bg-[#3457cc] text-white font-bold text-xl py-4 px-6 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02] mb-4"
+                  className="w-full bg-[#4169e1] hover:bg-[#3457cc] text-white font-bold text-xl py-5 rounded-2xl shadow-lg transition-all active:scale-[0.98]"
                 >
-                  Complete
+                  Continue
                 </button>
-
-                {/* Privacy Notice */}
-                <p className="text-center text-sm text-gray-600">
-                  We only contact you about your car.
-                  <br />
-                  By submitting, you acknowledge our{" "}
-                  <a
-                    href="#"
-                    className="text-[#4169e1] underline"
-                  >
-                    privacy policy
-                  </a>{" "}
-                  and agree to receive messages from Carbid and
-                  our partners.
-                </p>
               </form>
             )}
 
             {step === 2 && (
-              <form onSubmit={handleStep2Submit}>
-                {/* Title */}
-                <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">
-                  VIN Information
-                </h1>
-                <p className="text-gray-700 mb-8">
-                  We need your Vehicle Identification Number
-                </p>
+              <form onSubmit={handleSubmit(onFinalSubmit)}>
+                <h1 className="text-3xl font-bold text-[#1e3a8a] mb-2">VIN Information</h1>
+                <p className="text-gray-700 mb-8">Almost there! We just need your VIN.</p>
 
-                {/* Subtitle */}
-                <h2 className="text-2xl font-bold text-[#374a7d] mb-8 leading-snug">
-                  In order to Schedule a Pickup Appointment We
-                  Need a Valid VIN
-                </h2>
-
-                <div className="mb-8">
-                  <label className="block text-gray-900 text-lg mb-2">
-                    Vehicle Identification Number (VIN)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={vin}
-                      onChange={(e) =>
-                        setVin(e.target.value.toUpperCase())
-                      }
-                      placeholder="Enter your VIN"
-                      maxLength={17}
-                      className="w-full px-4 py-3 pr-12 rounded-lg border border-gray-300 bg-blue-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:border-[#4169e1] focus:ring-2 focus:ring-[#4169e1]/20"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      title="VIN is a 17-character unique code found on your vehicle registration or dashboard"
-                    >
-                      <HelpCircle className="w-6 h-6" />
-                    </button>
-                  </div>
+                <div className="bg-blue-50 p-6 rounded-2xl mb-8 border border-blue-100">
+                  <h2 className="text-lg font-bold text-[#374a7d] leading-snug">
+                    In order to schedule a pickup appointment we need a valid VIN.
+                  </h2>
                 </div>
 
-                {/* Skip VIN Link */}
-                <div className="mb-8">
+                <div className="mb-6">
+                  <label className="block text-gray-700 font-semibold mb-2">Vehicle Identification Number (VIN)</label>
+                  <div className="relative">
+                    <Controller
+                      name="vin"
+                      control={control}
+                      rules={{
+                        required: "VIN is required",
+                        pattern: { value: /^[A-HJ-NPR-Z0-9]{17}$/i, message: "VIN must be 17 valid characters" }
+                      }}
+                      render={({ field }) => (
+                        <input
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                          placeholder="Enter 17-character VIN"
+                          maxLength={17}
+                          className={`w-full px-4 py-4 pr-12 rounded-xl border ${errors.vin ? "border-red-500" : "border-gray-300"} bg-white focus:ring-2 focus:ring-blue-200 outline-none transition-all uppercase`}
+                        />
+                      )}
+                    />
+                    <HelpCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-300 cursor-help" />
+                  </div>
+                  {errors.vin && <p className="text-red-500 text-xs mt-1">{errors.vin.message}</p>}
+                </div>
+
+                <div className="mb-8 text-center">
                   <button
                     type="button"
                     onClick={handleSkipVIN}
-                    className="text-[#4169e1] hover:text-[#3457cc] font-semibold text-lg underline transition-colors"
+                    className="text-blue-600 hover:text-blue-800 font-semibold underline decoration-2 underline-offset-4"
                   >
                     I cannot provide a VIN now
                   </button>
                 </div>
 
-                {/* Complete Button */}
                 <button
                   type="submit"
-                  className="w-full bg-[#4169e1] hover:bg-[#3457cc] text-white font-bold text-xl py-4 px-6 rounded-xl shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
+                  className="w-full bg-[#4169e1] hover:bg-[#3457cc] text-white font-bold text-xl py-5 rounded-2xl shadow-lg transition-all active:scale-[0.98]"
                 >
-                  Complete
+                  Complete Submission
                 </button>
               </form>
             )}

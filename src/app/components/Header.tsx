@@ -1,4 +1,5 @@
 import { Phone } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "./ui/button";
 
 export function Header() {
@@ -7,18 +8,16 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white text-xl font-bold">
-                  CB
-                </span>
-              </div>
-              <span className="text-2xl font-bold text-gray-900">
-                Carbid
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-xl font-bold">
+                CB
               </span>
             </div>
-          </div>
+            <span className="text-2xl font-bold text-gray-900">
+              Carbid
+            </span>
+          </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">

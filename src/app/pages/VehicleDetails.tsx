@@ -1,14 +1,11 @@
-import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { useForm, Controller } from "react-hook-form";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "../components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
 
 interface VehicleData {
@@ -19,660 +16,304 @@ interface VehicleData {
   phone: string;
 }
 
+interface FullVehicleFormData extends VehicleData {
+  mileage: string;
+  doesItDrive: string;
+  tiresInflated: string;
+  wheelsAttached: string;
+  frontCondition: string;
+  rearCondition: string;
+  leftSideCondition: string;
+  rightSideCondition: string;
+  engineCondition: string;
+  floodDamage: string;
+  fireDamage: string;
+  glassCondition: string;
+  airbagDeployed: string;
+}
+
 export default function VehicleDetails() {
   const navigate = useNavigate();
   const location = useLocation();
-  const vehicleData = (
-    location.state as { vehicleData?: VehicleData }
-  )?.vehicleData;
+  const vehicleData = (location.state as { vehicleData?: VehicleData })?.vehicleData;
 
-  // Car Conditions
-  const [mileage, setMileage] = useState("");
-  const [doesItDrive, setDoesItDrive] = useState("");
-  const [tiresInflated, setTiresInflated] = useState("");
-  const [wheelsAttached, setWheelsAttached] = useState("");
-
-  // Body Condition
-  const [frontCondition, setFrontCondition] = useState("");
-  const [rearCondition, setRearCondition] = useState("");
-  const [leftSideCondition, setLeftSideCondition] =
-    useState("");
-  const [rightSideCondition, setRightSideCondition] =
-    useState("");
-  const [engineCondition, setEngineCondition] = useState("");
-  const [floodDamage, setFloodDamage] = useState("");
-  const [fireDamage, setFireDamage] = useState("");
-  const [glassCondition, setGlassCondition] = useState("");
-  const [airbagDeployed, setAirbagDeployed] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const detailsData = {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FullVehicleFormData>({
+    defaultValues: {
       ...vehicleData,
-      mileage,
-      doesItDrive,
-      tiresInflated,
-      wheelsAttached,
-      frontCondition,
-      rearCondition,
-      leftSideCondition,
-      rightSideCondition,
-      engineCondition,
-      floodDamage,
-      fireDamage,
-      glassCondition,
-      airbagDeployed,
-    };
+      mileage: "",
+      doesItDrive: "",
+      tiresInflated: "",
+      wheelsAttached: "",
+      frontCondition: "",
+      rearCondition: "",
+      leftSideCondition: "",
+      rightSideCondition: "",
+      engineCondition: "",
+      floodDamage: "",
+      fireDamage: "",
+      glassCondition: "",
+      airbagDeployed: "",
+    },
+  });
 
-    console.log("Complete Vehicle Data:", detailsData);
-    // Navegar para a página de oferta
-    navigate("/offer-details", { state: detailsData });
+  const onSubmit = (data: FullVehicleFormData) => {
+    console.log("=== Middle VEHICLE DATA JSON ===");
+    console.log(JSON.stringify(data, null, 2));
+    navigate("/offer-details", { state: data });
   };
+
+  // Componente auxiliar para renderizar campos Yes/No repetitivos
+  const YesNoField = ({ name, label, control, error, className }: any) => (
+    <div className={`bg-gray-50 p-5 rounded-lg border border-gray-200 ${className}`}>
+      <Label className="text-base font-semibold mb-3 block text-gray-700">{label}</Label>
+      <Controller
+        name={name}
+        control={control}
+        rules={{ required: "Required" }}
+        render={({ field }) => (
+          <RadioGroup
+            onValueChange={field.onChange}
+            value={field.value}
+            className="flex gap-4"
+          >
+            {/* Opção YES */}
+            <div className={`flex-1 border-2 rounded-md transition-all ${field.value === "yes" ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-300 bg-white"
+              }`}>
+              <Label
+                htmlFor={`${name}-yes`}
+                className="flex items-center space-x-3 p-3 w-full h-full cursor-pointer"
+              >
+                <RadioGroupItem value="yes" id={`${name}-yes`} />
+                <span className="font-normal flex-1">Yes</span>
+              </Label>
+            </div>
+
+            {/* Opção NO */}
+            <div className={`flex-1 border-2 rounded-md transition-all ${field.value === "no" ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-300 bg-white"
+              }`}>
+              <Label
+                htmlFor={`${name}-no`}
+                className="flex items-center space-x-3 p-3 w-full h-full cursor-pointer"
+              >
+                <RadioGroupItem value="no" id={`${name}-no`} />
+                <span className="font-normal flex-1">No</span>
+              </Label>
+            </div>
+          </RadioGroup>
+        )}
+      />
+      {error && <p className="text-red-500 text-[10px] mt-1 italic">{error.message}</p>}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <main className="py-12 px-4 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto">
-          {/* Back Button */}
+        <div className="max-w-5xl mx-auto">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 font-semibold transition-colors"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 font-semibold transition-colors group"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back</span>
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span>Back to Vehicle Info</span>
           </button>
 
-          {/* Vehicle Info Header */}
           {vehicleData && (
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-xl shadow-lg mb-8 text-white">
-              <h2 className="text-3xl font-bold mb-2">
-                Vehicle Details
-              </h2>
+              <h2 className="text-3xl font-bold mb-2">Vehicle Details</h2>
               <p className="text-blue-100 text-lg">
-                {vehicleData.year} {vehicleData.make}{" "}
-                {vehicleData.model}
+                {vehicleData.year} {vehicleData.make} {vehicleData.model}
               </p>
-              <p className="text-blue-100">
-                ZIP Code: {vehicleData.zipCode} | Telephone:{" "}
-                {vehicleData.phone}
+              <p className="text-blue-50 text-sm opacity-90">
+                ZIP: {vehicleData.zipCode} | Phone: {vehicleData.phone}
               </p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Car Conditions Section */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+            {/* 1. OPERATIONAL STATUS */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-              <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
-                Car Conditions
-              </h3>
-
-              {/* Grid layout for questions */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Mileage */}
-                <div className="lg:col-span-2">
-                  <Label
-                    htmlFor="mileage"
-                    className="text-base font-semibold mb-3 block text-gray-700"
-                  >
-                    Mileage
-                  </Label>
-                  <Input
-                    id="mileage"
-                    type="number"
-                    placeholder="Enter mileage"
-                    value={mileage}
-                    onChange={(e) => setMileage(e.target.value)}
-                    className="h-12 max-w-md"
-                    required
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Operational Status</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="md:col-span-2">
+                  <Label className="text-base font-semibold mb-3 block">Current Mileage</Label>
+                  <Controller
+                    name="mileage"
+                    control={control}
+                    rules={{
+                      required: "Mileage is required",
+                      min: { value: 0, message: "Mileage cannot be negative" }
+                    }}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        type="number"
+                        min="0"
+                        onKeyDown={(e) => {
+                          if (e.key === '-' || e.key === 'e' || e.key === ',') {
+                            e.preventDefault();
+                          }
+                        }}
+                        onChange={(e) => {
+                          const val = Math.abs(parseInt(e.target.value) || 0);
+                          field.onChange(val.toString());
+                        }}
+                        placeholder="Enter mileage"
+                        className={`h-12 max-w-xs ${errors.mileage ? "border-red-500" : ""}`}
+                      />
+                    )}
                   />
+                  {errors.mileage && <p className="text-red-500 text-xs mt-1">{errors.mileage.message}</p>}
                 </div>
 
-                {/* Does it drive */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Does it drive?
-                  </Label>
-                  <RadioGroup
-                    value={doesItDrive}
-                    onValueChange={setDoesItDrive}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="yes"
-                        id="drive-yes"
-                      />
-                      <Label
-                        htmlFor="drive-yes"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Yes
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="no"
-                        id="drive-no"
-                      />
-                      <Label
-                        htmlFor="drive-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        No
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Tires Inflated */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Are the tires inflated?
-                  </Label>
-                  <RadioGroup
-                    value={tiresInflated}
-                    onValueChange={setTiresInflated}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="yes"
-                        id="tires-yes"
-                      />
-                      <Label
-                        htmlFor="tires-yes"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Yes
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="no"
-                        id="tires-no"
-                      />
-                      <Label
-                        htmlFor="tires-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        No
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Wheels Attached */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200 lg:col-span-2">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Are all the wheels attached to the car?
-                  </Label>
-                  <RadioGroup
-                    value={wheelsAttached}
-                    onValueChange={setWheelsAttached}
-                    required
-                  >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                        <RadioGroupItem
-                          value="yes"
-                          id="wheels-yes"
-                        />
-                        <Label
-                          htmlFor="wheels-yes"
-                          className="cursor-pointer font-normal flex-1"
-                        >
-                          Yes
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                        <RadioGroupItem
-                          value="no"
-                          id="wheels-no"
-                        />
-                        <Label
-                          htmlFor="wheels-no"
-                          className="cursor-pointer font-normal flex-1"
-                        >
-                          No
-                        </Label>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                </div>
+                <YesNoField name="doesItDrive" label="Does it drive?" control={control} error={errors.doesItDrive} />
+                <YesNoField name="tiresInflated" label="Are the tires inflated?" control={control} error={errors.tiresInflated} />
+                <YesNoField
+                  name="wheelsAttached"
+                  label="Are all wheels attached?"
+                  control={control}
+                  error={errors.wheelsAttached}
+                  className="md:col-span-2"
+                />
               </div>
             </div>
 
-            {/* Body Condition Section */}
+            {/* 2. BODY CONDITION */}
             <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-              <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">
-                Body Condition
-              </h3>
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Body Condition</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Front */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Front
-                  </Label>
-                  <RadioGroup
-                    value={frontCondition}
-                    onValueChange={setFrontCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="good"
-                        id="front-good"
-                      />
-                      <Label
-                        htmlFor="front-good"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Good
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="minor-damage"
-                        id="front-minor"
-                      />
-                      <Label
-                        htmlFor="front-minor"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Minor Damage
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="major-damage"
-                        id="front-major"
-                      />
-                      <Label
-                        htmlFor="front-major"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Major Damage
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                {['frontCondition', 'rearCondition', 'leftSideCondition', 'rightSideCondition'].map((name) => (
+                  <div key={name} className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                    <Label className="text-base font-semibold mb-3 block capitalize">{name.replace('Condition', '').replace(/([A-Z])/g, ' $1')}</Label>
+                    <Controller
+                      name={name as any}
+                      control={control}
+                      rules={{ required: "Required" }}
+                      render={({ field }) => (
+                        <RadioGroup onValueChange={field.onChange} value={field.value} className="space-y-2">
+                          {['Good', 'Minor Damage', 'Major Damage'].map((val) => (
+                            <div
+                              key={val}
+                              className={`border-2 rounded-md transition-all ${field.value === val.toLowerCase() ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-blue-300 bg-white"
+                                }`}
+                            >
+                              <Label
+                                htmlFor={`${name}-${val}`}
+                                className="flex items-center space-x-3 p-3 w-full h-full cursor-pointer"
+                              >
+                                <RadioGroupItem value={val.toLowerCase()} id={`${name}-${val}`} />
+                                <span className="font-normal flex-1">{val}</span>
+                              </Label>
+                            </div>
+                          ))}
+                        </RadioGroup>
+                      )}
+                    />
+                    {errors[name as keyof FullVehicleFormData] && <p className="text-red-500 text-xs mt-2">Required</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                {/* Rear */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Rear
-                  </Label>
-                  <RadioGroup
-                    value={rearCondition}
-                    onValueChange={setRearCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="good"
-                        id="rear-good"
-                      />
-                      <Label
-                        htmlFor="rear-good"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Good
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="minor-damage"
-                        id="rear-minor"
-                      />
-                      <Label
-                        htmlFor="rear-minor"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Minor Damage
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="major-damage"
-                        id="rear-major"
-                      />
-                      <Label
-                        htmlFor="rear-major"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Major Damage
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Left Side */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Left Side
-                  </Label>
-                  <RadioGroup
-                    value={leftSideCondition}
-                    onValueChange={setLeftSideCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="good"
-                        id="left-good"
-                      />
-                      <Label
-                        htmlFor="left-good"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Good
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="minor-damage"
-                        id="left-minor"
-                      />
-                      <Label
-                        htmlFor="left-minor"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Minor Damage
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="major-damage"
-                        id="left-major"
-                      />
-                      <Label
-                        htmlFor="left-major"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Major Damage
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Right Side */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Right Side
-                  </Label>
-                  <RadioGroup
-                    value={rightSideCondition}
-                    onValueChange={setRightSideCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="good"
-                        id="right-good"
-                      />
-                      <Label
-                        htmlFor="right-good"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Good
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="minor-damage"
-                        id="right-minor"
-                      />
-                      <Label
-                        htmlFor="right-minor"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Minor Damage
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="major-damage"
-                        id="right-major"
-                      />
-                      <Label
-                        htmlFor="right-major"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Major Damage
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+            {/* 3. ENGINE & DAMAGE */}
+            <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800 border-b pb-3">Engine & Damage</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                 {/* Engine */}
                 <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Engine
-                  </Label>
-                  <RadioGroup
-                    value={engineCondition}
-                    onValueChange={setEngineCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="runs"
-                        id="engine-runs"
-                      />
-                      <Label
-                        htmlFor="engine-runs"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Runs
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="does-not-run"
-                        id="engine-no"
-                      />
-                      <Label
-                        htmlFor="engine-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Does Not Run
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="missing"
-                        id="engine-missing"
-                      />
-                      <Label
-                        htmlFor="engine-missing"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Missing
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Flood Damage */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Has the car been in a flood?
-                  </Label>
-                  <RadioGroup
-                    value={floodDamage}
-                    onValueChange={setFloodDamage}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="yes"
-                        id="flood-yes"
-                      />
-                      <Label
-                        htmlFor="flood-yes"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Yes
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="no"
-                        id="flood-no"
-                      />
-                      <Label
-                        htmlFor="flood-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        No
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                {/* Fire Damage */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Has the car been in a fire?
-                  </Label>
-                  <RadioGroup
-                    value={fireDamage}
-                    onValueChange={setFireDamage}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="yes"
-                        id="fire-yes"
-                      />
-                      <Label
-                        htmlFor="fire-yes"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Yes
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem value="no" id="fire-no" />
-                      <Label
-                        htmlFor="fire-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        No
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <Label className="text-base font-semibold mb-3 block text-gray-700">Engine Status</Label>
+                  <Controller
+                    name="engineCondition"
+                    control={control}
+                    rules={{ required: "Required" }}
+                    render={({ field }) => (
+                      <RadioGroup onValueChange={field.onChange} value={field.value} className="space-y-2">
+                        {['Runs', 'Does Not Run', 'Missing'].map((val) => {
+                          const id = `engine-${val.toLowerCase().replace(/\s+/g, '-')}`;
+                          return (
+                            <div
+                              key={id}
+                              className={`border-2 rounded-md transition-all ${field.value === val.toLowerCase().replace(/\s+/g, '-') ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white"
+                                }`}
+                            >
+                              <Label htmlFor={id} className="flex items-center space-x-3 p-3 w-full h-full cursor-pointer">
+                                <RadioGroupItem value={val.toLowerCase().replace(/\s+/g, '-')} id={id} />
+                                <span className="font-normal flex-1">{val}</span>
+                              </Label>
+                            </div>
+                          );
+                        })}
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.engineCondition && <p className="text-red-500 text-[10px] mt-1 italic">Required</p>}
                 </div>
 
                 {/* Glass */}
                 <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Glass
-                  </Label>
-                  <RadioGroup
-                    value={glassCondition}
-                    onValueChange={setGlassCondition}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="good"
-                        id="glass-good"
-                      />
-                      <Label
-                        htmlFor="glass-good"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Good
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="cracked"
-                        id="glass-cracked"
-                      />
-                      <Label
-                        htmlFor="glass-cracked"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Cracked
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="broken"
-                        id="glass-broken"
-                      />
-                      <Label
-                        htmlFor="glass-broken"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Broken
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <Label className="text-base font-semibold mb-3 block text-gray-700">Glass Condition</Label>
+                  <Controller
+                    name="glassCondition"
+                    control={control}
+                    rules={{ required: "Required" }}
+                    render={({ field }) => (
+                      <RadioGroup onValueChange={field.onChange} value={field.value} className="space-y-2">
+                        {['Good', 'Cracked', 'Broken'].map((val) => {
+                          const id = `glass-${val.toLowerCase()}`;
+                          return (
+                            <div
+                              key={id}
+                              className={`border-2 rounded-md transition-all ${field.value === val.toLowerCase() ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white"
+                                }`}
+                            >
+                              <Label htmlFor={id} className="flex items-center space-x-3 p-3 w-full h-full cursor-pointer">
+                                <RadioGroupItem value={val.toLowerCase()} id={id} />
+                                <span className="font-normal flex-1">{val}</span>
+                              </Label>
+                            </div>
+                          );
+                        })}
+                      </RadioGroup>
+                    )}
+                  />
+                  {errors.glassCondition && <p className="text-red-500 text-[10px] mt-1 italic">Required</p>}
                 </div>
 
-                {/* Airbag */}
-                <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                  <Label className="text-base font-semibold mb-3 block text-gray-700">
-                    Has the airbag been deployed?
-                  </Label>
-                  <RadioGroup
-                    value={airbagDeployed}
-                    onValueChange={setAirbagDeployed}
-                    required
-                  >
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer">
-                      <RadioGroupItem
-                        value="yes"
-                        id="airbag-yes"
-                      />
-                      <Label
-                        htmlFor="airbag-yes"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        Yes
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-3 bg-white p-3 rounded-md border border-gray-200 hover:border-blue-400 transition-colors cursor-pointer mt-2">
-                      <RadioGroupItem
-                        value="no"
-                        id="airbag-no"
-                      />
-                      <Label
-                        htmlFor="airbag-no"
-                        className="cursor-pointer font-normal flex-1"
-                      >
-                        No
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                <YesNoField name="floodDamage" label="Has the car been in a flood?" control={control} error={errors.floodDamage} />
+                <YesNoField name="fireDamage" label="Has the car been in a fire?" control={control} error={errors.fireDamage} />
+                <YesNoField
+                  name="airbagDeployed"
+                  label="Has the airbag been deployed?"
+                  control={control}
+                  error={errors.airbagDeployed}
+                  className="md:col-span-2"
+                />
               </div>
             </div>
 
-            {/* Submit Button */}
-            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-              <div className="flex flex-col sm:flex-row justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/")}
-                  className="h-12 px-8 text-base border-2 hover:bg-gray-50"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="h-12 px-8 text-base bg-blue-600 hover:bg-blue-700 shadow-lg"
-                >
-                  Get offer
-                </Button>
-              </div>
+            {/* SUBMIT */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col sm:flex-row justify-end gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/")}
+                className="h-12 px-8 border-2 font-semibold"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="h-12 px-12 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl rounded-xl shadow-lg active:bg-blue-800 transition-colors w-full sm:w-auto"
+              >
+                Get Offer
+              </Button>
             </div>
           </form>
         </div>
