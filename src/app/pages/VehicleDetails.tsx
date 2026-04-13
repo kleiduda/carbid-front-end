@@ -61,9 +61,35 @@ export default function VehicleDetails() {
   });
 
   const onSubmit = (data: FullVehicleFormData) => {
-    console.log("=== Middle VEHICLE DATA JSON ===");
-    console.log(JSON.stringify(data, null, 2));
-    navigate("/offer-details", { state: data });
+    const jsonStep2 = {
+      vehicle: {
+        year: vehicleData?.year,
+        make: vehicleData?.make,
+        model: vehicleData?.model,
+        zipCode: vehicleData?.zipCode,
+        phone: vehicleData?.phone,
+        details: {
+          mileage: data.mileage,
+          doesItDrive: data.doesItDrive,
+          tiresInflated: data.tiresInflated,
+          wheelsAttached: data.wheelsAttached,
+          frontCondition: data.frontCondition,
+          rearCondition: data.rearCondition,
+          leftSideCondition: data.leftSideCondition,
+          rightSideCondition: data.rightSideCondition,
+          engineCondition: data.engineCondition,
+          floodDamage: data.floodDamage,
+          fireDamage: data.fireDamage,
+          glassCondition: data.glassCondition,
+          airbagDeployed: data.airbagDeployed,
+        }
+      }
+    };
+
+    console.log("=== STEP 2: VEHICLE DETAILS ===");
+    console.log(JSON.stringify(jsonStep2, null, 2));
+
+    navigate("/call-later", { state: jsonStep2 });
   };
 
   // Componente auxiliar para renderizar campos Yes/No repetitivos
