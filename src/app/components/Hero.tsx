@@ -30,10 +30,33 @@ export function Hero() {
   });
 
   const onSubmit = (data: VehicleFormData) => {
-    console.log("Dados enviados com sucesso:", data);
+    const cleanPhone = data.phone.replace(/\D/g, "");
+    const jsonStep1 = {
+      vehicle: {
+        ...data,
+        phone: cleanPhone,
+        details: {}
+      }
+    };
+
+    console.log("=== STEP 1: BASIC INFO (CLEAN) ===");
+    console.log(JSON.stringify(jsonStep1, null, 2));
+
     navigate("/vehicle-details", {
-      state: { vehicleData: data },
+      state: { vehicleData: { ...data, phone: cleanPhone } },
     });
+  };
+
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
+    const phoneNumber = value.replace(/[^\d]/g, "");
+    const len = phoneNumber.length;
+
+    if (len < 4) return phoneNumber;
+    if (len < 7) {
+      return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+    }
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
   };
 
   return (
@@ -143,16 +166,21 @@ export function Hero() {
                   name="phone"
                   control={control}
                   rules={{
-                    required: "Required",
-                    pattern: { value: /^\d{10,14}$/, message: "Invalid phone" }
+                    required: "Phone is required",
+                    minLength: { value: 14, message: "Invalid phone number" }
                   }}
                   render={({ field }) => (
                     <Input
                       {...field}
                       type="tel"
-                      placeholder="Phone"
-                      className={`h-12 ${errors.phone ? "border-red-500" : ""}`}
-                      onChange={(e) => field.onChange(e.target.value.slice(0, 14))}
+                      placeholder="(555) 555-5555"
+                      className={errors.phone ? "border-red-500" : ""}
+                      // A mágica acontece aqui:
+                      onChange={(e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                      maxLength={14}
                     />
                   )}
                 />

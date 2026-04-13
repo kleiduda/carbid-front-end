@@ -40,21 +40,53 @@ export default function CallLater() {
     },
   });
 
-  const onStep1Submit = () => {
+  const onStep1Submit = (data: AllSubmissionData) => {
+    const currentProgress = {
+      ...previousData,
+      "Title, Color and Location": {
+        hasTitle: data.hasTitle,
+        address: data.address,
+        vehicleColor: data.vehicleColor
+      }
+    };
+
+    console.log("=== STEP 3: TITLE & LOCATION ===");
+    console.log(JSON.stringify(currentProgress, null, 2));
+
     setStep(2);
   };
 
   const onFinalSubmit = (data: AllSubmissionData) => {
-    console.log("=== FINAL COMPLETE SUBMISSION JSON ===");
-    console.log(JSON.stringify(data, null, 2));
+    const finalJson = {
+      vehicle: previousData.vehicle,
+      "Title and Location": {
+        hasTitle: data.hasTitle,
+        address: data.address,
+        vehicleColor: data.vehicleColor
+      },
+      vin: data.vin
+    };
+
+    console.log("=== STEP 4: FINAL COMPLETE JSON ===");
+    console.log(JSON.stringify(finalJson, null, 2));
+
     navigate("/success");
   };
 
   const handleSkipVIN = () => {
-    const currentData = getValues();
-    const finalData = { ...currentData, vin: "Not provided" };
-    console.log("=== SUBMISSION WITHOUT VIN ===");
-    console.log(JSON.stringify(finalData, null, 2));
+    const data = getValues();
+    const finalJson = {
+      vehicle: previousData.vehicle,
+      "Title and Location": {
+        hasTitle: data.hasTitle,
+        address: data.address,
+        vehicleColor: data.vehicleColor
+      },
+      vin: "Not provided"
+    };
+
+    console.log("=== STEP 4: FINAL (NO VIN) ===");
+    console.log(JSON.stringify(finalJson, null, 2));
     navigate("/success");
   };
 
