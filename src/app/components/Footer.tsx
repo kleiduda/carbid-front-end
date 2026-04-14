@@ -79,6 +79,11 @@ export function Footer() {
                   How It Works
                 </a>
               </li>
+              <li>
+                <a href="/login" className="hover:text-blue-400 transition-colors">
+                  Partner Login
+                </a>
+              </li>
             </ul>
           </div>
 
