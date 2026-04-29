@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { ArrowLeft } from "lucide-react";
-
+import api from "../../api/api";
 interface VehicleData {
   year: string;
   make: string;
@@ -60,37 +60,37 @@ export default function VehicleDetails() {
     },
   });
 
-  const onSubmit = (data: FullVehicleFormData) => {
-    const jsonStep2 = {
-      vehicle: {
-        year: vehicleData?.year,
-        make: vehicleData?.make,
-        model: vehicleData?.model,
-        zipCode: vehicleData?.zipCode,
-        phone: vehicleData?.phone,
-        details: {
-          mileage: data.mileage,
-          doesItDrive: data.doesItDrive,
-          tiresInflated: data.tiresInflated,
-          wheelsAttached: data.wheelsAttached,
-          frontCondition: data.frontCondition,
-          rearCondition: data.rearCondition,
-          leftSideCondition: data.leftSideCondition,
-          rightSideCondition: data.rightSideCondition,
-          engineCondition: data.engineCondition,
-          floodDamage: data.floodDamage,
-          fireDamage: data.fireDamage,
-          glassCondition: data.glassCondition,
-          airbagDeployed: data.airbagDeployed,
+  const onSubmit = async (data: any) => {
+    const offerId = location.state?.offerId;
+
+    try {
+      const payload = {
+        vehicle: {
+          details: {
+            mileage: data.mileage.toString(),
+            doesItDrive: data.doesItDrive,
+            tiresInflated: data.tiresInflated,
+            wheelsAttached: data.wheelsAttached,
+            frontCondition: data.frontCondition,
+            rearCondition: data.rearCondition,
+            leftSideCondition: data.leftSideCondition,
+            rightSideCondition: data.rightSideCondition,
+            engineCondition: data.engineCondition,
+            floodDamage: data.floodDamage,
+            fireDamage: data.fireDamage,
+            glassCondition: data.glassCondition,
+            airbagDeployed: data.airbagDeployed,
+          }
         }
-      }
-    };
+      };
 
-    console.log("=== STEP 2: VEHICLE DETAILS ===");
-    console.log(JSON.stringify(jsonStep2, null, 2));
-
-    navigate("/call-later", { state: jsonStep2 });
+      await api.put(`/offers/${offerId}`, payload);
+      navigate("/call-later", { state: { offerId } });
+    } catch (error) {
+      console.error(error);
+    }
   };
+
 
   // Componente auxiliar para renderizar campos Yes/No repetitivos
   const YesNoField = ({ name, label, control, error, className }: any) => (

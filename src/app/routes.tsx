@@ -11,11 +11,8 @@ import UserDetail from "./pages/UserDetail";
 import Login from "./pages/Login";
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
-  if (!isAdmin) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
+  const token = localStorage.getItem("token");
+  return token ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
 export const router = createBrowserRouter([

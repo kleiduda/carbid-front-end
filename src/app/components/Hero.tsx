@@ -3,6 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import api from "../../api/api";
 
 interface VehicleFormData {
   year: string;
@@ -29,22 +30,26 @@ export function Hero() {
     }
   });
 
-  const onSubmit = (data: VehicleFormData) => {
-    const cleanPhone = data.phone.replace(/\D/g, "");
-    const jsonStep1 = {
-      vehicle: {
-        ...data,
-        phone: cleanPhone,
-        details: {}
+  const onSubmit = async (data: any) => {
+    try {
+      const payload = {
+        vehicle: {
+          year: data.year.toString(),
+          make: data.make,
+          model: data.model,
+          zipCode: data.zipCode,
+          phone: data.phone.replace(/\D/g, ""),
+        }
       }
-    };
 
-    console.log("=== STEP 1: BASIC INFO (CLEAN) ===");
-    console.log(JSON.stringify(jsonStep1, null, 2));
+      const response = await api.post("/offers", payload);
+      const createdId = response.data.id;
 
-    navigate("/vehicle-details", {
-      state: { vehicleData: { ...data, phone: cleanPhone } },
-    });
+      navigate("/vehicle-details", { state: { offerId: createdId } });
+    } catch (error: any) {
+      console.error("Erro na API:", error.response?.data);
+      alert("API Error. Check console.");
+    }
   };
 
   const formatPhoneNumber = (value: string) => {

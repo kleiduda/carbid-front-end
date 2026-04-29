@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { HelpCircle, ChevronDown } from "lucide-react";
+import api from "../../api/api";
 interface AllSubmissionData {
   year?: string;
   make?: string;
@@ -21,6 +22,7 @@ interface AllSubmissionData {
 export default function CallLater() {
   const navigate = useNavigate();
   const location = useLocation();
+  const offerId = location.state?.offerId;
   const previousData = location.state || {};
 
   const [step, setStep] = useState(1);
@@ -28,7 +30,6 @@ export default function CallLater() {
   const {
     control,
     handleSubmit,
-    getValues,
     formState: { errors },
   } = useForm<AllSubmissionData>({
     defaultValues: {
@@ -40,54 +41,50 @@ export default function CallLater() {
     },
   });
 
-  const onStep1Submit = (data: AllSubmissionData) => {
-    const currentProgress = {
-      ...previousData,
-      "Title, Color and Location": {
-        hasTitle: data.hasTitle,
-        address: data.address,
-        vehicleColor: data.vehicleColor
-      }
-    };
+  const onStep1Submit = async (data: AllSubmissionData) => {
+    try {
+      const payload = {
+        "Title and Location": {
+          hasTitle: data.hasTitle,
+          address: data.address,
+          vehicleColor: data.vehicleColor
+        }
+      };
 
-    console.log("=== STEP 3: TITLE & LOCATION ===");
-    console.log(JSON.stringify(currentProgress, null, 2));
+      console.log("Updating Title and Location...", payload);
 
-    setStep(2);
+      await api.put(`/offers/${offerId}`, payload);
+
+      setStep(2);
+    } catch (error) {
+      console.error("Error updating location:", error);
+      alert("Failed to save location data.");
+    }
   };
 
-  const onFinalSubmit = (data: AllSubmissionData) => {
-    const finalJson = {
-      vehicle: previousData.vehicle,
-      "Title and Location": {
-        hasTitle: data.hasTitle,
-        address: data.address,
-        vehicleColor: data.vehicleColor
-      },
-      vin: data.vin
-    };
+  const onFinalSubmit = async (data: AllSubmissionData) => {
+    try {
+      const payload = {
+        vin: data.vin
+      };
 
-    console.log("=== STEP 4: FINAL COMPLETE JSON ===");
-    console.log(JSON.stringify(finalJson, null, 2));
+      console.log("Finalizing with VIN...", payload);
 
-    navigate("/success");
+      await api.put(`/offers/${offerId}`, payload);
+
+      navigate("/success");
+    } catch (error) {
+      console.error("Error finalizing offer:", error);
+    }
   };
 
-  const handleSkipVIN = () => {
-    const data = getValues();
-    const finalJson = {
-      vehicle: previousData.vehicle,
-      "Title and Location": {
-        hasTitle: data.hasTitle,
-        address: data.address,
-        vehicleColor: data.vehicleColor
-      },
-      vin: "Not provided"
-    };
-
-    console.log("=== STEP 4: FINAL (NO VIN) ===");
-    console.log(JSON.stringify(finalJson, null, 2));
-    navigate("/success");
+  const handleSkipVIN = async () => {
+    try {
+      await api.put(`/offers/${offerId}`, { vin: "Not provided" });
+      navigate("/success");
+    } catch (error) {
+      console.error("Error skipping VIN:", error);
+    }
   };
 
   return (
